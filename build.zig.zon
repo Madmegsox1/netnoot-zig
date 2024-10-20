@@ -1,0 +1,12 @@
+.{
+    .name = "netnoot-zig",
+    .version = "0.0.1",
+
+    .paths = .{"."},
+    .dependencies = .{
+        .sqlite = .{
+            .url = "https://github.com/nDimensional/zig-sqlite/archive/refs/tags/v0.1.0-3460100.tar.gz",
+            .hash = "12203568ffd27f2757e25bdf30a7d5766fb8a4c5795c52830a971dfec92db6ff2e73",
+        },
+    },
+}

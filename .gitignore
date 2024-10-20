@@ -1,0 +1,4 @@
+./zig-out
+./firewall-log.txt
+./.zig-cache
+./firewall.db
