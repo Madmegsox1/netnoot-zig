@@ -1,4 +1,4 @@
-# Netnoot: Asus Firewall analytics server
+# Netnoot-Zig: Asus Firewall analytics server
 
 ## Introduction
 Netnoot is a powerful tool designed to receive logs from your Asus firewall and analyze dropped packets, providing detailed reports on potential security threats and attack vectors. The service is built as a lightweight server application that runs seamlessly within a Docker container, ensuring ease of deployment and management. The primary goal of this project is to enhance personal cybersecurity by offering insights into possible attack vectors and improving overall cyber resilience.
