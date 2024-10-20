@@ -12,12 +12,10 @@ pub fn main() !void {
     defer std.process.argsFree(gpa, args);
 
     if (args.len < 3) {
-        std.debug.print("not long", .{});
         return error.IncorrectArgs;
     }
 
     if (!std.mem.eql(u8, args[1], "-p")) {
-        std.debug.print("no -p {s}", .{args[0]});
         return error.IncorrectArgs;
     }
 
@@ -72,7 +70,7 @@ fn listen(port: u16, gpa: std.mem.Allocator, db: sqlite.Database) !void {
 
     try std.posix.bind(socket, &address.any, address.getOsSockLen());
     var buf: [400]u8 = undefined;
-    std.debug.print("Bound to port \n", .{});
+    std.log.info("Bound to port \n", .{});
 
     var otherAddr: std.posix.sockaddr = undefined;
     var otherAddrlen: std.posix.socklen_t = @sizeOf(std.posix.sockaddr);
@@ -82,7 +80,7 @@ fn listen(port: u16, gpa: std.mem.Allocator, db: sqlite.Database) !void {
     const pattern = "SRC=([0-9.]+) DST=([0-9.]+) LEN=([0-9]+) TOS=([a-zA-Z0-9]+) PREC=([a-zA-Z0-9]+) TTL=([0-9]+) ID=([0-9]+) PROTO=([a-zA-Z0-9]+) SPT=([0-9]+) DPT=([0-9]+) SEQ=([0-9]+) ACK=([0-9]+) WINDOW=([0-9]+) RES=([a-zA-Z0-9]+) ([a-zA-Z0-9]+) URGP=([0-9]+)";
 
     if (c.regcomp(&fireWallPattern, pattern, c.REG_NEWLINE | c.REG_EXTENDED) != 0) {
-        std.debug.print("Failed to compile regex for firewall pattern matching", .{});
+        std.log.err("Failed to compile regex for firewall pattern matching", .{});
         return error.FailedToCompRegex;
     }
 
@@ -119,10 +117,7 @@ fn listen(port: u16, gpa: std.mem.Allocator, db: sqlite.Database) !void {
         try file.writeAll(log);
 
         if (0 == c.regexec(&fireWallPattern, @ptrCast(log), matches.len, &matches, 0)) {
-            std.debug.print(
-                "received {d} byte(s) from {any};\n    string: {s}\n",
-                .{ n_rec, otherAddr, buf[0..n_rec] },
-            );
+            std.log.info("Blocked request\n {s}", .{buf[0..n_rec]});
 
             const srcIp = log[@as(usize, @intCast(matches[1].rm_so))..@as(usize, @intCast(matches[1].rm_eo))];
             const desPort = try std.fmt.parseInt(i32, log[@as(usize, @intCast(matches[10].rm_so))..@as(usize, @intCast(matches[10].rm_eo))], 10);
@@ -149,21 +144,6 @@ fn listen(port: u16, gpa: std.mem.Allocator, db: sqlite.Database) !void {
                 }
             } else {
                 try portInstert.exec(.{ .port = desPort, .count = 1 });
-            }
-
-            var index: i32 = 0;
-
-            for (matches[1..]) |group| {
-                const start = group.rm_so;
-                const end = group.rm_eo;
-
-                index += 1;
-
-                if (start != -1 and end != -1) {
-                    const matchedSlice = log[@as(usize, @intCast(start))..@as(usize, @intCast(end))];
-
-                    std.debug.print("{d} Matched: {s}\n", .{ index, matchedSlice });
-                }
             }
         }
     }
